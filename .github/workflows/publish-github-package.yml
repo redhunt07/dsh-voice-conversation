@@ -47,3 +47,20 @@ jobs:
           fi
           npm view "$package_name@$package_version" name version --registry=https://npm.pkg.github.com
           echo "Published repository package: $package_name@$package_version" >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify package repository and visibility
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const owner = process.env.GITHUB_REPOSITORY_OWNER;
+          const response = await fetch(`https://api.github.com/users/${owner}/packages/npm/dsh-voice-conversation`, {
+            headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: 'application/vnd.github+json' },
+          });
+          if (!response.ok) throw new Error(`Package metadata verification failed: ${response.status}`);
+          const pkg = await response.json();
+          if (pkg.repository?.full_name !== process.env.GITHUB_REPOSITORY) throw new Error('Package is not linked to this repository');
+          const status = { name: pkg.name, visibility: pkg.visibility, url: pkg.html_url, repository: pkg.repository.full_name };
+          console.log('PACKAGE_STATUS=' + JSON.stringify(status));
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\nPackage visibility: **${pkg.visibility}**\n\n[Open the repository package](${pkg.html_url})\n`);
+          NODE
