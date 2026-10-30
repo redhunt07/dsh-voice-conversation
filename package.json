@@ -1,0 +1,95 @@
+{
+  "name": "dsh-voice-conversation",
+  "description": "Hands-free Italian/English voice conversations for DSH, with an inline chat dock and an optional local Whisper/Piper backend.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "keywords": [
+    "dsh",
+    "deepseek",
+    "voice",
+    "whisper",
+    "piper",
+    "italian"
+  ],
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./src/client.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --packages=external --outfile=lib/index.js",
+    "test": "node tests/vad.cjs && node tests/dock.cjs && node tests/cycles.cjs",
+    "runtime:setup": "python3 scripts/runtime.py setup",
+    "runtime:start": "python3 scripts/runtime.py start",
+    "runtime:doctor": "python3 scripts/runtime.py doctor",
+    "prepack": "npm run build && npm test"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-chat"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.4",
+    "@deepseek-ai/dsh-host-webserver": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-settings": "0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "^3.18.4"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "lib/",
+    "src/",
+    "runtime/",
+    "scripts/",
+    "tests/",
+    "cordis.patch.yml",
+    "README.md",
+    "README.it.md",
+    "LICENSE",
+    "NOTICE.md",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "react": "18.3.1",
+    "react-test-renderer": "18.3.1"
+  },
+  "author": {
+    "name": "RedHunt07",
+    "url": "https://github.com/redhunt07"
+  },
+  "contributors": [
+    {
+      "name": "ZG2017",
+      "url": "https://github.com/ZG2017"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redhunt07/dsh-voice-conversation.git"
+  },
+  "homepage": "https://github.com/redhunt07/dsh-voice-conversation#readme",
+  "bugs": {
+    "url": "https://github.com/redhunt07/dsh-voice-conversation/issues"
+  }
+}
