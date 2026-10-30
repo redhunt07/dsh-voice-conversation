@@ -1,11 +1,21 @@
 # DSH Voice Conversation — guida italiana
 
+[![Versione npm](https://img.shields.io/npm/v/dsh-voice-conversation.svg)](https://www.npmjs.com/package/dsh-voice-conversation)
+
 Maintainer / autore del fork: **[RedHunt07](https://github.com/redhunt07)** · License: **MIT**. Original Voice Loop code by ZG2017; see [NOTICE.md](NOTICE.md).
 Conversazione vocale continua italiano/inglese: parli, fai una pausa di 1,7 secondi e il prompt viene inviato. Dopo la risposta vocale torna in ascolto. La barra compatta lascia visibili chat, strumenti e Think reso disponibile da DSH.
 
 Versione iniziale **0.1.1**, verificata con **DSH 0.2.0-rc.2**, Node.js 22+ e Linux. I test automatici simulano il microfono: prima di una release stabile serve una prova prolungata in ambienti reali.
 
 ## Installazione
+
+Pacchetto npm: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)**. La versione attualmente pubblicata su npm è **0.1.0**:
+
+```sh
+dsh plugin --profile web add dsh-voice-conversation@0.1.0
+```
+
+Per le correzioni **0.1.1**, usa invece il pacchetto GitHub qui sotto. La pubblicazione della 0.1.1 su npm richiede ancora la verifica a due fattori del maintainer.
 
 ```sh
 dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.1.tgz
@@ -36,7 +46,7 @@ Il plugin usa localhost:8766. I due slot local/cloud inizialmente sono entrambi 
 
 ## Pubblicazione
 
-Sono inclusi sorgenti, codice compilato, test, documentazione e attribuzioni, senza modelli, chiavi o sessioni personali. Prima di pubblicare scegli nome/scope npm e metadati del repository: il nome proposto non è riservato. Build, test e pubblicazione sono descritti nella [guida completa](README.md). Non è stato pubblicato nulla online.
+Sono inclusi sorgenti, codice compilato, test, documentazione e attribuzioni, senza modelli, chiavi o sessioni personali. Il progetto è pubblico su GitHub e il pacchetto è disponibile su npm; le versioni disponibili nei due canali sono indicate sopra. Build, test e pubblicazione sono descritti nella [guida completa](README.md).
 
 ## Correzioni e voci italiane locali (0.1.1)
 
