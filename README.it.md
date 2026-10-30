@@ -9,13 +9,13 @@ Versione iniziale **0.1.1**, verificata con **DSH 0.2.0-rc.2**, Node.js 22+ e Li
 
 ## Installazione
 
-Pacchetto npm: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)**. La versione attualmente pubblicata su npm è **0.1.0**:
+Pacchetto npm: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)**. La versione attualmente pubblicata su npm è **0.1.1**:
 
 ```sh
-dsh plugin --profile web add dsh-voice-conversation@0.1.0
+dsh plugin --profile web add dsh-voice-conversation@0.1.1
 ```
 
-Per le correzioni **0.1.1**, usa invece il pacchetto GitHub qui sotto. La pubblicazione della 0.1.1 su npm richiede ancora la verifica a due fattori del maintainer.
+La stessa versione **0.1.1** è disponibile anche come archivio precompilato su GitHub:
 
 ```sh
 dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.1.tgz
@@ -53,3 +53,7 @@ Sono inclusi sorgenti, codice compilato, test, documentazione e attribuzioni, se
 Sono corretti i casi di risposta finale in ritardo, ripresa nello stesso turno dopo un'approvazione, invio che non parte ed eventi audio residui che interrompono la risposta successiva. Anche il selettore alternativo ora riconosce l'italiano.
 
 Per usare Kokoro: `python3 scripts/runtime.py setup --device cuda --tts kokoro`, oppure `--device cpu`. Poi avvia normalmente. Setup scarica circa 354 MB aggiuntivi e ne verifica gli hash. Puoi scegliere `if_sara` (Sara) o `im_nicola` (Nicola) per l'italiano; `af_heart` per inglese. Con Kokoro attivo, le vecchie selezioni Paola/Lessac vengono associate a Sara/Heart. Sono rispettate pause tra frasi e proposizioni, e il Markdown viene pulito solo per la lettura. Piper resta disponibile. La naturalezza va valutata ascoltando: non è garantita la stessa qualità di un servizio vocale realtime commerciale.
+
+## Pacchetto nella sezione Packages di GitHub
+
+È pubblico e collegato al repository: **[@redhunt07/dsh-voice-conversation 0.1.1](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation)**. [Istruzioni per il registro GitHub](docs/github-packages.md). Usa una sola distribuzione del plugin per profilo: npm oppure GitHub Packages.

@@ -9,7 +9,7 @@ Hands-free Italian/English conversations for DSH. Speak, pause for 1.7 seconds, 
 
 [![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/redhunt07/dsh-voice-conversation)
 
-[Guida italiana](README.it.md) · [Credits and licenses](NOTICE.md)
+[Guida italiana](README.it.md) · [npm package](https://www.npmjs.com/package/dsh-voice-conversation) · [GitHub Package](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation) · [Credits and licenses](NOTICE.md)
 
 ## Compatibility
 
@@ -17,17 +17,17 @@ Tested: **DSH 0.2.0-rc.2**, Node.js 22+, Linux web profile. Other DSH releases, 
 
 ## Install
 
-npm package: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)** (currently published: **0.1.0**).
+npm package: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)** (currently published: **0.1.1**).
 
 ```sh
-# published npm release (0.1.0)
-dsh plugin --profile web add dsh-voice-conversation@0.1.0
+# published npm release (0.1.1)
+dsh plugin --profile web add dsh-voice-conversation@0.1.1
 ```
 
-For the **0.1.1 fixes**, use the package committed in this repository below. Version 0.1.1 is not yet published on npm because publication requires maintainer 2FA.
+The same **0.1.1** release is also available as a prebuilt archive below.
 
 ```sh
-# corrective 0.1.1 package (npm publication awaits maintainer 2FA)
+# equivalent prebuilt GitHub archive
 dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.1.tgz
 ```
 
@@ -92,3 +92,7 @@ To uninstall, remove the bundle entry, run `dsh plugin --profile web remove dsh-
 Choose the optional Kokoro backend during setup: `python3 scripts/runtime.py setup --device cuda --tts kokoro` (or `--device cpu`). Start normally afterward. Setup downloads a pinned ONNX model and voice bank (~354 MB extra), verifies SHA-256, and installs separate optional dependencies. The local model provides `if_sara` and `im_nicola` for Italian, and `af_heart` for English. The engine preserves sentence/clause pauses and normalizes Markdown for speech; the chat text is unchanged. Piper remains the default for existing runtime setups. With Kokoro enabled, legacy Paola/Lessac selections map to Sara/Heart. Voice quality is subjective and is not equivalent to a commercial realtime voice service.
 
 The patch also fixes delayed chat completion, same-turn approval continuations, no-op submissions, queued media abort/pause events and Italian alternate-voice selection. Autoplay/synthesis failures are shown in the dock rather than silently skipped.
+
+## GitHub Packages
+
+The repository's **Packages** sidebar contains the public [@redhunt07/dsh-voice-conversation](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation) package, version **0.1.1**. The scoped GitHub distribution adjusts the package, browser module and bundle identities together. [Registry setup and installation](docs/github-packages.md). Choose either the npm distribution or the GitHub Packages distribution in a profile; do not enable both at once.
