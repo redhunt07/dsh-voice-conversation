@@ -3,6 +3,10 @@
 Maintainer / autore del fork: **[RedHunt07](https://github.com/redhunt07)** · License: **MIT**. Original Voice Loop code by ZG2017; see [NOTICE.md](NOTICE.md).
 Hands-free Italian/English conversations for DSH. Speak, pause for 1.7 seconds, and your prompt is submitted. After the final spoken reply, listening resumes using the same microphone stream. A compact composer dock keeps the native chat, tools and DSH-provided Think output visible. This displays reasoning exposed by DSH, not private model reasoning.
 
+![DSH Voice Conversation voice dock in the DSH chat composer](docs/screenshot.png)
+
+[![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/redhunt07/dsh-voice-conversation)
+
 [Guida italiana](README.it.md) · [Credits and licenses](NOTICE.md)
 
 ## Compatibility
@@ -12,6 +16,9 @@ Tested: **DSH 0.2.0-rc.2**, Node.js 22+, Linux web profile. Other DSH releases, 
 ## Install
 
 ```sh
+# published npm package
+dsh plugin --profile web add dsh-voice-conversation
+# or the same 0.1.0 build straight from the repository
 dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.0.tgz
 ```
 
