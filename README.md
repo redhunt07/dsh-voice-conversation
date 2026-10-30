@@ -16,9 +16,7 @@ Tested: **DSH 0.2.0-rc.2**, Node.js 22+, Linux web profile. Other DSH releases, 
 ## Install
 
 ```sh
-# published npm package
-dsh plugin --profile web add dsh-voice-conversation@0.1.1
-# or the same prebuilt package from GitHub
+# corrective 0.1.1 package (npm publication awaits maintainer 2FA)
 dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.1.tgz
 ```
 
