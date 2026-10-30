@@ -776,12 +776,9 @@ window.__ModuleLoader__.load({
     // voice, English replies get a real English voice. A rough CJK-density
     // check is enough to tell them apart for this purpose.
     function pickVoiceForText(text) {
-      var cjk = 0
-      for (var i = 0; i < text.length; i++) {
-        var cp = text.codePointAt(i)
-        if (cp >= 0x4e00 && cp <= 0x9fff) cjk++
-      }
-      return text.length > 0 && cjk / text.length > 0.15 ? 'zh-CN-XiaoxuanNeural' : 'en-US-AriaNeural'
+      var italian = (text.toLowerCase().match(/\b(ciao|sono|posso|come|questo|questa|quello|quella|bene|grazie|perché|quindi|allora|vuoi|nella|della|delle|risposta|fatto|certo)\b/g) || []).length
+      var english = (text.toLowerCase().match(/\b(the|this|that|your|you|with|have|can|will|would|hello|please|thanks|answer|help)\b/g) || []).length
+      return english > italian ? 'en-US-AriaNeural' : 'it-IT-ElsaNeural'
     }
 
     // ---------------------------------------------------------------------
@@ -837,7 +834,7 @@ window.__ModuleLoader__.load({
     // loadVoiceModePrefs()/its catch fallback below both take [0] as the
     // default when nothing is stored yet - reordering this list must not
     // silently change that default for existing/new users.
-    var QWEN3_TTS_VOICE_SUGGESTIONS = ['paola', 'lessac']
+    var QWEN3_TTS_VOICE_SUGGESTIONS = ['if_sara', 'im_nicola', 'af_heart', 'paola', 'lessac']
 
     function loadVoiceModePrefs() {
       try {
@@ -1347,7 +1344,7 @@ window.__ModuleLoader__.load({
       function cleanupAudio() {
         stopMeter()
         if (micRef.current) { try { micRef.current.stopMonitoring() } catch (e) {} }
-        if (props.audioGraph && props.audioGraph.el) { try { props.audioGraph.el.pause() } catch (e) {} }
+        if (props.audioGraph && props.audioGraph.el) { try { if (props.audioGraph.el.__voiceStop) props.audioGraph.el.__voiceStop('cancelled'); else props.audioGraph.el.pause() } catch (e) {} }
       }
 
       function stopAll() {
@@ -1358,7 +1355,7 @@ window.__ModuleLoader__.load({
       }
 
       async function beginListening() {
-        if (stoppedRef.current) return
+        if (stoppedRef.current || pendingCountRef.current > 0) return
         var mic = micRef.current
         if (!mic) return // not initialized yet - the init effect's own .then() calls this once it is
         // Diagnostic only - every call site that reaches here is a
@@ -1480,6 +1477,7 @@ window.__ModuleLoader__.load({
           claimedSessionTurn: -1, // the DSH session's own `turn` number this Turn is locked onto, once observed
           finalizedSeq: -1, // highest finalized-node seq already examined for claimedSessionTurn
           submitted: false,
+          createdAt: performance.now(),
           sawRunning: false,
           idleTimer: null,
           bargeIn: null, // { detector, trigger }
@@ -1620,9 +1618,9 @@ window.__ModuleLoader__.load({
       // e.g. "run this shell command?" - a different payload shape with no
       // `questions` array at all).
       var ANNOUNCE_TEXT = {
-        plan: 'I have a plan ready for your review. Switching to text mode - I will continue once you are done.',
-        question: 'There is a question for you to answer on screen. Switching to text mode - I will pick back up once you are done.',
-        approval: 'There is a permission request for you to confirm on screen. Switching to text mode - I will pick back up once you are done.',
+        plan: 'Ho preparato un piano. Puoi controllarlo nella chat; poi continuo.',
+        question: 'C’è una domanda nella chat. Aspetto la tua risposta per continuare.',
+        approval: 'Serve una conferma nella chat. Dopo la tua scelta continuo.',
       }
 
       /** Which of the three announcement variants applies to whatever's currently pending. */
@@ -1662,7 +1660,7 @@ window.__ModuleLoader__.load({
        * plays, never blocks the handoff (the caller proceeds regardless of
        * how this settles).
        */
-      async function announcePendingSwitch() {
+      async function announcePendingSwitch(generation) {
         try {
           if (!props.audioGraph || !props.audioGraph.el) return
           var announceText = ANNOUNCE_TEXT[currentPendingKind()]
@@ -1683,6 +1681,7 @@ window.__ModuleLoader__.load({
             return
           }
           var blob = await speakResp.blob()
+          if (stoppedRef.current || generation !== pendingAnnouncementRef.current || !pendingCountRef.current) return
           var url = URL.createObjectURL(blob)
           var audio = props.audioGraph.el
           if (props.audioGraph.ctx && props.audioGraph.ctx.state === 'suspended') {
@@ -1708,13 +1707,8 @@ window.__ModuleLoader__.load({
             }
             meterRafRef.current = requestAnimationFrame(tick)
           }
-          await new Promise(function (resolve) {
-            audio.src = url
-            audio.onended = function () { URL.revokeObjectURL(url); resolve() }
-            audio.onerror = function () { URL.revokeObjectURL(url); resolve() }
-            var p = audio.play()
-            if (p && p.catch) p.catch(function () { resolve() })
-          })
+          try { await playVoiceAudio(audio, url, 45000) }
+          finally { URL.revokeObjectURL(url) }
           stopMeter()
           resetLevel()
         } catch (e) {
@@ -1810,7 +1804,9 @@ window.__ModuleLoader__.load({
           if (!inputActions) throw new Error('no inputActions face (standard-kit prop unavailable)')
           inputActions.setDraft(text)
           turn.submitted = true
-          inputActions.submit()
+          var submission = inputActions.submit()
+          if (submission && typeof submission.then === 'function') await submission
+          observeVoiceTurn(latestSessionRef.current)
           markTiming('submit')
         } catch (e) {
           console.error('[voice-mode] submit failed:', e)
@@ -1843,63 +1839,61 @@ window.__ModuleLoader__.load({
        */
       function tryClaimAndFlush(turn, session) {
         if (!isCurrentTurn(turn) || !turn.awaitingReply || !turn.submitted || pendingCancelRef.current) return
-        if (session && session.running) { turn.sawRunning = true; return }
-        if (session && session.partial) return
+        if (session && session.pending && session.pending.length) return
         var newest = findNewestAssistant(session)
+        var ended = newest && session && session.turnEnds && session.turnEnds.has(newest.turn)
+        if (session && session.running && !ended) { turn.sawRunning = true; return }
+        if (session && session.partial && !ended) return
         if (!newest || newest.seq <= turn.finalizedSeq) return
         if (turn.claimedSessionTurn === -1) {
-          if (newest.seq <= lastSpokenSeqRef.current || newest.turn <= lastSpokenTurnRef.current) return // still old news, not yet superseded
-        } else if (newest.turn !== turn.claimedSessionTurn) {
-          return // some OTHER dsh-turn's node - not what this Turn is waiting on
-        }
+          if (newest.seq <= lastSpokenSeqRef.current || newest.turn <= lastSpokenTurnRef.current) return
+        } else if (newest.turn !== turn.claimedSessionTurn) return
+        // An empty trailing assistant/tool step must not hide an earlier text reply.
+        var candidates = (session.nodes || []).filter(function (node) {
+          return node && node.kind === 'assistant' && node.turn === newest.turn && node.seq > lastSpokenSeqRef.current && extractPlainText(node.blocks).trim()
+        }).sort(function (left, right) { return right.seq - left.seq })
+        var reply = candidates[0]
+        if (!reply) return
         turn.finalizedSeq = newest.seq
-        if (newest.seq > lastSpokenSeqRef.current) lastSpokenSeqRef.current = newest.seq
-        if (turn.claimedSessionTurn === -1) turn.claimedSessionTurn = newest.turn
-        // Never narrate while a plan-review/question wait is pending - see
-        // the pendingCount effect's own "isPending" branch comment. That
-        // effect starts a fresh turn once the pending item clears, so the
-        // real next reply still gets picked up - nothing to redo here.
-        if (session && session.pending && session.pending.length > 0) {
-          turn.awaitingReply = false
-          return
-        }
-        var fullText = extractPlainText(newest.blocks).trim()
-        if (!fullText) {
-          // Intermediate node (reasoning/tool-call step before the actual
-          // text reply) - keep waiting for the next one; claimedSessionTurn
-          // stays locked (it's still the SAME dsh-turn, just an earlier
-          // step of it) and finalizedSeq is already past this one so it
-          // won't be re-examined.
-          turn.awaitingReply = true
-          return
-        }
-        markTiming('agent-reply')
+        lastSpokenSeqRef.current = Math.max(lastSpokenSeqRef.current, newest.seq)
+        turn.claimedSessionTurn = newest.turn
         turn.awaitingReply = false
-        speakReply(turn, fullText)
+        if (turn.idleTimer) { clearTimeout(turn.idleTimer); turn.idleTimer = null }
+        markTiming('agent-reply')
+        void speakReply(turn, extractPlainText(reply.blocks).trim())
       }
 
       function observeVoiceTurn(session) {
         var turn = currentTurnRef.current
         if (!turn || !isCurrentTurn(turn)) return
         tryClaimAndFlush(turn, session)
-        if (session && session.running) { turn.sawRunning = true; if (turn.idleTimer) { clearTimeout(turn.idleTimer); turn.idleTimer = null }; return }
-        if (!turn.submitted || !turn.awaitingReply || (session && session.pending && session.pending.length)) return
-        if (!turn.sawRunning && !(session && (session.promptError || session.lastAgentError))) return
+        if (!turn.submitted || !turn.awaitingReply) return
+        if (session && session.running) { turn.sawRunning = true; turn.idleSince = null; return }
+        if (pendingCancelRef.current || (session && ((session.pending && session.pending.length) || (session.pendingSubmissions && session.pendingSubmissions.length)))) return
+        var failed = session && (session.promptError || session.lastAgentError)
+        if (turn.idleSince == null) turn.idleSince = performance.now()
+        var elapsed = performance.now() - (turn.sawRunning ? turn.idleSince : turn.createdAt)
+        // Do not discard a reply when Chat arrives later than the lifecycle idle event.
+        // Also recover a rejected/no-op submit that never produced a running event.
+        if (!failed && elapsed < (turn.sawRunning ? 2000 : 8000)) return
         if (turn.idleTimer) return
-        // Lifecycle and Chat are separate observables: allow the final Chat node to arrive.
         turn.idleTimer = setTimeout(function () {
           turn.idleTimer = null
           if (!isCurrentTurn(turn) || !turn.awaitingReply) return
           var latest = latestSessionRef.current
-          if (latest && (latest.running || (latest.pending && latest.pending.length))) return
+          if (latest && (latest.running || (latest.pending && latest.pending.length) || (latest.pendingSubmissions && latest.pendingSubmissions.length))) return
           tryClaimAndFlush(turn, latest)
           if (!turn.awaitingReply || !isCurrentTurn(turn)) return
-          if (latest && (latest.promptError || latest.lastAgentError)) showError('Turno terminato con un errore. Dettagli nella chat.')
+          showError(failed ? 'Turno terminato con un errore. Dettagli nella chat.' : 'Nessuna risposta vocale disponibile. Il microfono è di nuovo attivo.')
           cleanupAudio()
           void beginListening()
-        }, 350)
+        }, failed ? 350 : 1000)
       }
       React.useEffect(function () { observeVoiceTurn(props.session) }, [props.session])
+      React.useEffect(function () {
+        var timer = setInterval(function () { observeVoiceTurn(latestSessionRef.current) }, 200)
+        return function () { clearInterval(timer) }
+      }, [])
 
       /**
        * Synthesizes and plays the WHOLE reply as one request, then returns
@@ -1945,7 +1939,7 @@ window.__ModuleLoader__.load({
               localVoice: useLocalTts ? sharedVoiceModePrefs.localVoice : undefined,
             }),
           })
-          if (!isCurrentTurn(turn)) return null
+          if (!isCurrentTurn(turn)) { speakResp.cancel(); return null }
           if (!speakResp.ok) {
             var errBody = await speakResp.json().catch(function () { return null })
             showError((errBody && errBody.error) || ('Speech synthesis failed (HTTP ' + speakResp.status + ')'))
@@ -1957,6 +1951,7 @@ window.__ModuleLoader__.load({
           return blob
         } catch (e) {
           console.error('[voice-mode] synthesizeSpeech failed:', e)
+          if (isCurrentTurn(turn)) showError('Sintesi vocale non riuscita: ' + (e && e.message ? e.message : String(e)))
           return null
         }
       }
@@ -2023,7 +2018,10 @@ window.__ModuleLoader__.load({
             meterRafRef.current = requestAnimationFrame(tick)
           }
           var audioUrl = URL.createObjectURL(audioBlob)
-          try { await playVoiceAudio(audio, audioUrl) }
+          try {
+            var outcome = await playVoiceAudio(audio, audioUrl)
+            if (isCurrentTurn(turn) && outcome.reason !== 'ended' && outcome.reason !== 'pause') showError('Riproduzione vocale non riuscita (' + outcome.reason + '). Controlla audio e permessi del browser.')
+          }
           finally { URL.revokeObjectURL(audioUrl); stopMeter() }
         } catch (e) {
           console.error('[voice-mode] playSpeechBlob failed:', e)
@@ -2086,6 +2084,8 @@ window.__ModuleLoader__.load({
       var pendingCountRef = React.useRef(0)
       pendingCountRef.current = pendingCount
       var pendingGraceTimerRef = React.useRef(null)
+      var pendingAnnouncementRef = React.useRef(0)
+      var pendingSpokenFloorRef = React.useRef(null)
       var wasPendingRef = React.useRef(false)
       // Gates the handoff itself, separate from pendingCount: the panel
       // must not appear (overlay must not hide) until the announcement has
@@ -2159,6 +2159,7 @@ window.__ModuleLoader__.load({
             // to suspend listening entirely. abandonCurrentTurn() is a
             // no-op if nothing is current.
             if (currentTurnRef.current) { snapshotSpokenFloor(); currentTurnRef.current = null }
+            pendingSpokenFloorRef.current = { seq: lastSpokenSeqRef.current, turn: lastSpokenTurnRef.current }
             cycleTimingRef.current = null // whatever voice-triggered cycle was in flight is moot now
             resetLevel()
             // The finalized-node claim function's own pending-check (see
@@ -2195,7 +2196,8 @@ window.__ModuleLoader__.load({
             // with the ring's analyser tick wired up, only once audio is
             // actually about to play (see its own comment on why).
             setVoiceState('thinking')
-            announcePendingSwitch().then(function () { setHandoffReady(true) })
+            var announcement = ++pendingAnnouncementRef.current
+            announcePendingSwitch(announcement).finally(function () { if (!stoppedRef.current && announcement === pendingAnnouncementRef.current) setHandoffReady(true) })
           }, PENDING_GRACE_MS)
           return
         }
@@ -2210,6 +2212,9 @@ window.__ModuleLoader__.load({
           return
         }
         if (!isPending && wasPendingRef.current) {
+          pendingAnnouncementRef.current++
+          cleanupAudio()
+          setHandoffReady(true)
           // Resolved (by a tap on the real panel, since voice mode can't
           // answer it directly) - answering a pending question/approval
           // resumes the agent's own turn immediately (that's what a tool
@@ -2224,7 +2229,16 @@ window.__ModuleLoader__.load({
           setVoiceState('thinking')
           var turn = startTurn()
           turn.submitted = true
+          if (pendingSpokenFloorRef.current) {
+            lastSpokenSeqRef.current = pendingSpokenFloorRef.current.seq
+            lastSpokenTurnRef.current = pendingSpokenFloorRef.current.turn
+            pendingSpokenFloorRef.current = null
+          }
+          var continuation = latestSessionRef.current
+          var prior = continuation && (continuation.partial || findNewestAssistant(continuation))
+          if (prior && typeof prior.turn === 'number') turn.claimedSessionTurn = prior.turn
           armBargeIn(turn, interruptThinking)
+          observeVoiceTurn(continuation)
         }
         wasPendingRef.current = isPending
       }, [pendingCount])
@@ -2303,51 +2317,50 @@ window.__ModuleLoader__.load({
     // Every playback path settles, even when the browser misses media end events.
     function playVoiceAudio(audio, url, timeoutMs) {
       return new Promise(function (resolve) {
-        var done = false
-        var timer = null
+        if (audio.__voiceStop) audio.__voiceStop('replaced')
+        var done = false, timer = null, started = false
         var maximum = timeoutMs || 180000
-        function settle() {
+        function settle(reason) {
           if (done) return
           done = true
           if (timer) clearTimeout(timer)
-          audio.removeEventListener('ended', settle)
-          audio.removeEventListener('error', settle)
-          audio.removeEventListener('abort', settle)
-          audio.removeEventListener('pause', settle)
+          audio.removeEventListener('ended', ended)
+          audio.removeEventListener('error', failed)
+          audio.removeEventListener('pause', paused)
           audio.removeEventListener('loadedmetadata', metadata)
+          if (audio.__voiceStop === settle) audio.__voiceStop = null
           try { audio.pause() } catch (e) {}
-          resolve()
+          resolve({ reason: reason })
         }
-        function arm(ms) {
-          if (timer) clearTimeout(timer)
-          timer = setTimeout(settle, ms)
-        }
-        function metadata() {
-          if (done) return
-          var seconds = audio.duration
-          if (Number.isFinite(seconds) && seconds > 0) arm(Math.min(maximum, seconds * 1000 + 1500))
-        }
-        audio.onended = null
-        audio.onerror = null
-        audio.onloadedmetadata = null
-        audio.src = url
-        audio.addEventListener('ended', settle)
-        audio.addEventListener('error', settle)
-        audio.addEventListener('abort', settle)
-        audio.addEventListener('pause', settle)
+        function arm(ms) { if (timer) clearTimeout(timer); timer = setTimeout(function () { settle('timeout') }, ms) }
+        function metadata() { if (!done && started && Number.isFinite(audio.duration) && audio.duration > 0) arm(Math.min(maximum, audio.duration * 1000 + 2000)) }
+        function ended() { if (started && audio.ended !== false) settle('ended') }
+        function failed() { if (audio.error) settle('media-error') }
+        // Setting src queues abort/pause events for the PREVIOUS resource. They
+        // cannot terminate the new resource unless it is actually paused.
+        function paused() { if (started && audio.paused === true) settle('pause') }
+        audio.onended = null; audio.onerror = null; audio.onloadedmetadata = null
+        audio.__voiceStop = settle
+        audio.addEventListener('ended', ended)
+        audio.addEventListener('error', failed)
+        audio.addEventListener('pause', paused)
         audio.addEventListener('loadedmetadata', metadata)
+        audio.src = url
         arm(Math.min(maximum, 15000))
         try {
-          Promise.resolve(audio.play()).then(function () { if (!done) { arm(maximum); metadata() } }, settle)
-        } catch (e) { settle() }
+          Promise.resolve(audio.play()).then(function () { if (!done) { started = true; arm(maximum); metadata() } }, function (error) { settle(error && error.name ? error.name : 'play-rejected') })
+        } catch (error) { settle(error && error.name ? error.name : 'play-failed') }
       })
     }
 
     async function fetchVoice(url, options) {
       var controller = new AbortController()
       var timer = setTimeout(function () { controller.abort() }, 90000)
-      try { return await fetch(url, Object.assign({}, options, { signal: controller.signal })) }
-      finally { clearTimeout(timer) }
+      try {
+        var response = await fetch(url, Object.assign({}, options, { signal: controller.signal }))
+        function body(method) { return async function () { try { return await response[method]() } finally { clearTimeout(timer) } } }
+        return { ok: response.ok, status: response.status, json: body('json'), blob: body('blob'), cancel: function () { clearTimeout(timer); controller.abort() } }
+      } catch (error) { clearTimeout(timer); throw error }
     }
 
     function ComposerVoiceMode(props) {

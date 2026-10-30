@@ -1,4 +1,4 @@
-# DSH Voice Conversation 0.1.0
+# DSH Voice Conversation 0.1.1
 
 Maintained by **RedHunt07**, under **MIT**. Independent fork of ZG2017 Voice Loop, with original notices preserved.
 

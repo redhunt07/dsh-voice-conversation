@@ -17,9 +17,9 @@ Tested: **DSH 0.2.0-rc.2**, Node.js 22+, Linux web profile. Other DSH releases, 
 
 ```sh
 # published npm package
-dsh plugin --profile web add dsh-voice-conversation
-# or the same 0.1.0 build straight from the repository
-dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.0.tgz
+dsh plugin --profile web add dsh-voice-conversation@0.1.1
+# or the same prebuilt package from GitHub
+dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.1.tgz
 ```
 
 The DSH command also selects the bundle. Verify that `"dsh-voice-conversation"` occurs once in `dsh.profile.bundles` in `$DSH_HOME/profiles/web/package.json` (normally `~/.dsh/profiles/web/package.json`); add it only if missing and preserve existing entries. Disable any older Voice Loop bundle first: the two plugins use the same API paths and cannot run together. Restart DSH and hard-refresh the browser.
@@ -61,7 +61,7 @@ The supplied backend processes audio in memory and does not save recordings or t
 
 Pause detection and barge-in use audio energy, not semantic end-of-turn detection. Room noise, microphone gain and echo affect them. Recordings are capped at 120 seconds; audio requests time out after 90 seconds; playback has a watchdog and can truncate unusually long replies. The voice prompt requests concise answers while active.
 
-Tests simulate microphone/audio events and cover VAD, the dock, consecutive replies, tool-step filtering, TTS failure, interrupted synthesis, agent errors, and missing playback completion. Real-room microphone testing is still required before a stable public release. Version 0.1.0 is an initial release candidate.
+Tests simulate microphone/audio events and cover VAD, the dock, consecutive replies, tool-step filtering, TTS failure, interrupted synthesis, agent errors, and missing playback completion. Real-room microphone testing is still required before a stable public release. Version 0.1.1 is an initial release candidate.
 
 ## Develop and publish
 
@@ -77,3 +77,9 @@ npm pack
 Before publishing, choose an available npm name/scope and add maintainer/repository metadata. If renaming, update `package.json`, `src/client.js` and `cordis.patch.yml` together. Rebuild/test, then deliberately run `npm publish --access public`. The proposed name is not reserved. No registry publication is performed by setup.
 
 To uninstall, remove the bundle entry, run `dsh plugin --profile web remove dsh-voice-conversation`, and restart DSH. Runtime data and shared model caches are not automatically deleted.
+
+## More natural local Italian speech (0.1.1)
+
+Choose the optional Kokoro backend during setup: `python3 scripts/runtime.py setup --device cuda --tts kokoro` (or `--device cpu`). Start normally afterward. Setup downloads a pinned ONNX model and voice bank (~354 MB extra), verifies SHA-256, and installs separate optional dependencies. The local model provides `if_sara` and `im_nicola` for Italian, and `af_heart` for English. The engine preserves sentence/clause pauses and normalizes Markdown for speech; the chat text is unchanged. Piper remains the default for existing runtime setups. With Kokoro enabled, legacy Paola/Lessac selections map to Sara/Heart. Voice quality is subjective and is not equivalent to a commercial realtime voice service.
+
+The patch also fixes delayed chat completion, same-turn approval continuations, no-op submissions, queued media abort/pause events and Italian alternate-voice selection. Autoplay/synthesis failures are shown in the dock rather than silently skipped.

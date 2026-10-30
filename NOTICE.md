@@ -13,3 +13,5 @@ Plugin source and new integration scripts use the MIT terms in LICENSE. Dependen
 - Optional NVIDIA wheels remain subject to NVIDIA licenses. ffmpeg is a separately installed dependency, under the terms of the user's build.
 
 Model weights and runtime environments are not covered by the plugin's MIT license. Each upstream distribution provides its complete notices and source.
+
+Optional Kokoro backend added in 0.1.1: [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx) is MIT; [Kokoro model weights](https://huggingface.co/hexgrad/Kokoro-82M) are Apache-2.0. [espeak-ng](https://github.com/espeak-ng/espeak-ng) data/library delivered through espeakng-loader remain subject to their own GPL terms. None of these binaries/weights are bundled in this npm package. Setup downloads the model and voice bank separately from the upstream model-files-v1.1 release and verifies pinned SHA-256 values. See upstream licenses and VOICES.md for voice information.

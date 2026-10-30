@@ -1,7 +1,7 @@
 {
   "name": "dsh-voice-conversation",
   "description": "Hands-free Italian/English voice conversations for DSH, with an inline chat dock and an optional local Whisper/Piper backend.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "keywords": [
     "dsh",
@@ -24,7 +24,8 @@
     "runtime:setup": "python3 scripts/runtime.py setup",
     "runtime:start": "python3 scripts/runtime.py start",
     "runtime:doctor": "python3 scripts/runtime.py doctor",
-    "prepack": "npm run build && npm test"
+    "prepack": "npm run build && npm test",
+    "test:runtime": "python3 tests/speech_text.py"
   },
   "dsh": {
     "bundle": {

@@ -3,12 +3,12 @@
 Maintainer / autore del fork: **[RedHunt07](https://github.com/redhunt07)** · License: **MIT**. Original Voice Loop code by ZG2017; see [NOTICE.md](NOTICE.md).
 Conversazione vocale continua italiano/inglese: parli, fai una pausa di 1,7 secondi e il prompt viene inviato. Dopo la risposta vocale torna in ascolto. La barra compatta lascia visibili chat, strumenti e Think reso disponibile da DSH.
 
-Versione iniziale **0.1.0**, verificata con **DSH 0.2.0-rc.2**, Node.js 22+ e Linux. I test automatici simulano il microfono: prima di una release stabile serve una prova prolungata in ambienti reali.
+Versione iniziale **0.1.1**, verificata con **DSH 0.2.0-rc.2**, Node.js 22+ e Linux. I test automatici simulano il microfono: prima di una release stabile serve una prova prolungata in ambienti reali.
 
 ## Installazione
 
 ```sh
-dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.0.tgz
+dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.1.tgz
 ```
 
 Il comando DSH seleziona anche il bundle. Verifica che `"dsh-voice-conversation"` compaia una sola volta in `dsh.profile.bundles` in `~/.dsh/profiles/web/package.json`; aggiungilo solo se manca, conservando le altre voci. Con `DSH_HOME` personalizzato, il profilo è sotto quella cartella. Disabilita il vecchio Voice Loop prima di attivare questo fork: usano le stesse API. Riavvia DSH e ricarica con Ctrl+Shift+R.
@@ -37,3 +37,9 @@ Il plugin usa localhost:8766. I due slot local/cloud inizialmente sono entrambi 
 ## Pubblicazione
 
 Sono inclusi sorgenti, codice compilato, test, documentazione e attribuzioni, senza modelli, chiavi o sessioni personali. Prima di pubblicare scegli nome/scope npm e metadati del repository: il nome proposto non è riservato. Build, test e pubblicazione sono descritti nella [guida completa](README.md). Non è stato pubblicato nulla online.
+
+## Correzioni e voci italiane locali (0.1.1)
+
+Sono corretti i casi di risposta finale in ritardo, ripresa nello stesso turno dopo un'approvazione, invio che non parte ed eventi audio residui che interrompono la risposta successiva. Anche il selettore alternativo ora riconosce l'italiano.
+
+Per usare Kokoro: `python3 scripts/runtime.py setup --device cuda --tts kokoro`, oppure `--device cpu`. Poi avvia normalmente. Setup scarica circa 354 MB aggiuntivi e ne verifica gli hash. Puoi scegliere `if_sara` (Sara) o `im_nicola` (Nicola) per l'italiano; `af_heart` per inglese. Con Kokoro attivo, le vecchie selezioni Paola/Lessac vengono associate a Sara/Heart. Sono rispettate pause tra frasi e proposizioni, e il Markdown viene pulito solo per la lettura. Piper resta disponibile. La naturalezza va valutata ascoltando: non è garantita la stessa qualità di un servizio vocale realtime commerciale.

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.1 — 2026-10-30
+
+- Recover no-op submissions without depending on another session event.
+- Respect durable turn completion and delayed final chat updates.
+- Read same-turn continuations after approval without discarding them as old replies.
+- Ignore old-source media events; report playback/synthesis failures; bound approval announcements.
+- Extend audio request timeout through body consumption and cancel stale responses.
+- Select Italian rather than English in alternate speech mode for Italian text.
+- Optional local Kokoro Italian voices and punctuation/Markdown-aware speech text.
+- Regression cases reproduced against the previous release.
+
+
 ## 0.1.0 — 2026-10-30
 
 - Independent distribution derived from ZG2017 Voice Loop 0.3.0.

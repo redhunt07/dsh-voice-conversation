@@ -17,7 +17,8 @@ from huggingface_hub import snapshot_download
 from faster_whisper import WhisperModel
 from faster_whisper.audio import decode_audio
 import numpy as np
-from piper import PiperVoice
+from piper import PiperVoice, SynthesisConfig
+from speech_text import normalize_for_speech
 
 ROOT = Path(os.environ.get('DSH_VOICE_DATA', Path.home() / '.local/share/dsh-voice-conversation')).expanduser()
 DEVICE = os.environ.get('DSH_VOICE_DEVICE', 'cpu')
@@ -32,15 +33,20 @@ tts_lock = threading.Lock()
 state = {'ready': False, 'device': None, 'transcriptions': 0, 'syntheses': 0, 'last_inference_seconds': None}
 whisper = None
 voices = {}
+kokoro = None
+TTS_ENGINE = os.environ.get('DSH_VOICE_TTS', 'piper')
 
 @asynccontextmanager
 async def lifespan(app):
-    global whisper
+    global whisper, kokoro
     if not FFMPEG:
         raise RuntimeError("ffmpeg is required on PATH")
     # Separate env: no changes to Python environments of other applications.
     model_path = MODEL if Path(MODEL).is_dir() else snapshot_download(MODEL, revision='edaa852ec7e145841d8ffdb056a99866b5f0a478', local_files_only=True)
     whisper = WhisperModel(model_path, device=DEVICE, compute_type=COMPUTE, cpu_threads=4, num_workers=1, local_files_only=True)
+    if TTS_ENGINE == 'kokoro':
+        from kokoro_onnx import Kokoro
+        kokoro = Kokoro(str(ROOT / 'models/kokoro-v1.0.onnx'), str(ROOT / 'models/voices-v1.0.bin'))
     voices['it'] = PiperVoice.load(str(ROOT / 'models/it_IT-paola-medium.onnx'))
     voices['en'] = PiperVoice.load(str(ROOT / 'models/en_US-lessac-medium.onnx'))
     # Force CUDA kernels to load before the first microphone utterance.
@@ -69,7 +75,7 @@ async def host_and_origin(request: Request, call_next):
 
 @app.get('/health')
 def health():
-    return {**state, 'stt_model': 'large-v3', 'languages': ['it', 'en'], 'tts': 'piper-local', 'audio_storage': 'none'}
+    return {**state, 'stt_model': 'large-v3', 'languages': ['it', 'en'], 'tts': TTS_ENGINE + '-local', 'audio_storage': 'none'}
 
 def transcribe(data: bytes, requested_language: str):
     audio = decode_audio(io.BytesIO(data), sampling_rate=16000)
@@ -108,12 +114,24 @@ async def audio_transcriptions(request: Request, file: UploadFile = File(...), m
         log.exception('Transcription failed: %s', type(error).__name__)
         raise HTTPException(500, 'Trascrizione non riuscita; controllare il servizio dsh-voice') from error
 
-def synthesize(text: str, language: str):
+def synthesize(text: str, language: str, voice: str = ''):
+    text = normalize_for_speech(text, language)
+    if not text:
+        raise ValueError('Nessun testo da leggere')
     buffer = io.BytesIO()
     with tts_lock:
-        with wave.open(buffer, 'wb') as wav_file:
-            voices[language].synthesize_wav(text, wav_file)
-    result = subprocess.run([FFMPEG, '-nostdin', '-hide_banner', '-loglevel', 'error', '-i', 'pipe:0', '-f', 'mp3', '-b:a', '64k', 'pipe:1'], input=buffer.getvalue(), capture_output=True, timeout=60, check=True)
+        if kokoro is not None:
+            chosen = voice if voice in ('if_sara', 'im_nicola', 'af_heart', 'am_adam') else ('if_sara' if language == 'it' else 'af_heart')
+            samples, rate = kokoro.create(text, voice=chosen, speed=0.98, lang='it' if language == 'it' else 'en-us', sentence_pause=0.30, clause_pause=0.12)
+            with wave.open(buffer, 'wb') as wav_file:
+                wav_file.setnchannels(1)
+                wav_file.setsampwidth(2)
+                wav_file.setframerate(rate)
+                wav_file.writeframes((np.clip(samples, -1, 1) * 32767).astype('<i2').tobytes())
+        else:
+            with wave.open(buffer, 'wb') as wav_file:
+                voices[language].synthesize_wav(text, wav_file, SynthesisConfig(length_scale=1.04))
+    result = subprocess.run([FFMPEG, '-nostdin', '-hide_banner', '-loglevel', 'error', '-i', 'pipe:0', '-f', 'mp3', '-b:a', '96k', 'pipe:1'], input=buffer.getvalue(), capture_output=True, timeout=60, check=True)
     state['syntheses'] += 1
     return result.stdout
 
@@ -124,6 +142,6 @@ async def audio_speech(request: Request):
     if not text or len(text) > 12000:
         raise HTTPException(400, 'Testo vuoto o troppo lungo')
     voice = str(body.get('voice', '')).lower()
-    lang = 'en' if voice in ('lessac', 'en', 'en-us-arianeural', 'en-us-avaneural') else 'it'
-    audio = await asyncio.to_thread(synthesize, text, lang)
+    lang = 'en' if voice in ('lessac', 'en', 'en-us-arianeural', 'en-us-avaneural', 'af_heart', 'am_adam') else 'it'
+    audio = await asyncio.to_thread(synthesize, text, lang, voice)
     return Response(audio, media_type='audio/mpeg', headers={'Cache-Control': 'no-store'})
