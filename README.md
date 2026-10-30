@@ -1,5 +1,7 @@
 # DSH Voice Conversation
 
+[![npm version](https://img.shields.io/npm/v/dsh-voice-conversation.svg)](https://www.npmjs.com/package/dsh-voice-conversation)
+
 Maintainer / autore del fork: **[RedHunt07](https://github.com/redhunt07)** · License: **MIT**. Original Voice Loop code by ZG2017; see [NOTICE.md](NOTICE.md).
 Hands-free Italian/English conversations for DSH. Speak, pause for 1.7 seconds, and your prompt is submitted. After the final spoken reply, listening resumes using the same microphone stream. A compact composer dock keeps the native chat, tools and DSH-provided Think output visible. This displays reasoning exposed by DSH, not private model reasoning.
 
@@ -14,6 +16,15 @@ Hands-free Italian/English conversations for DSH. Speak, pause for 1.7 seconds, 
 Tested: **DSH 0.2.0-rc.2**, Node.js 22+, Linux web profile. Other DSH releases, operating systems and browsers need validation. Microphone access requires localhost or HTTPS and browser permission. Use headphones to reduce loudspeaker echo triggering spoken interruption.
 
 ## Install
+
+npm package: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)** (currently published: **0.1.0**).
+
+```sh
+# published npm release (0.1.0)
+dsh plugin --profile web add dsh-voice-conversation@0.1.0
+```
+
+For the **0.1.1 fixes**, use the package committed in this repository below. Version 0.1.1 is not yet published on npm because publication requires maintainer 2FA.
 
 ```sh
 # corrective 0.1.1 package (npm publication awaits maintainer 2FA)
