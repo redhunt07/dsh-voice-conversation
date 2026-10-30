@@ -1,0 +1,49 @@
+name: Publish GitHub Package
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - package.json
+      - 'dist/**'
+      - scripts/prepare-github-package.mjs
+      - .github/workflows/publish-github-package.yml
+permissions:
+  contents: read
+  packages: write
+concurrency:
+  group: github-package-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.repository == 'redhunt07/dsh-voice-conversation'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: https://npm.pkg.github.com
+          scope: '@redhunt07'
+          cache: npm
+      - run: npm ci --legacy-peer-deps --no-audit
+      - run: npm run build
+      - run: npm test
+      - run: python3 tests/speech_text.py
+      - name: Prepare the scoped GitHub distribution
+        run: node scripts/prepare-github-package.mjs
+      - name: Publish and verify the repository package
+        working-directory: github-package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          package_name=$(node -p 'require("./package.json").name')
+          package_version=$(node -p 'require("./package.json").version')
+          if npm view "$package_name@$package_version" version --registry=https://npm.pkg.github.com > /dev/null 2>&1; then
+            echo "This package version is already published."
+          else
+            npm publish --ignore-scripts --access public --registry=https://npm.pkg.github.com
+          fi
+          npm view "$package_name@$package_version" name version --registry=https://npm.pkg.github.com
+          echo "Published repository package: $package_name@$package_version" >> "$GITHUB_STEP_SUMMARY"
