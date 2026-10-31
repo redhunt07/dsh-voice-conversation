@@ -9,7 +9,7 @@ Versione iniziale **0.1.1**, verificata con **DSH 0.2.0-rc.2**, Node.js 22+ e Li
 
 ## Installazione
 
-Pacchetto npm: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)**. La versione attualmente pubblicata su npm è **0.1.1**:
+Pacchetto npm: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)**. La release npm è **0.1.2**:
 
 ```sh
 dsh plugin --profile web add dsh-voice-conversation
@@ -18,10 +18,10 @@ dsh plugin --profile web add dsh-voice-conversation
 Per fissare la versione verificata:
 
 ```sh
-dsh plugin --profile web add dsh-voice-conversation@0.1.1
+dsh plugin --profile web add dsh-voice-conversation@0.1.2
 ```
 
-La stessa versione **0.1.1** è disponibile anche come archivio precompilato su GitHub:
+La versione precedente **0.1.1** è disponibile anche come archivio precompilato su GitHub:
 
 ```sh
 dsh plugin --profile web add https://raw.githubusercontent.com/redhunt07/dsh-voice-conversation/main/dist/dsh-voice-conversation-0.1.1.tgz
@@ -68,6 +68,6 @@ Per usare Kokoro: `python3 scripts/runtime.py setup --device cuda --tts kokoro`,
 
 La scansione del catalogo è seguita nella [issue #548](https://github.com/dshplugin/dsh-plugin-hub/issues/548). Il badge indica la presentazione della richiesta; l’installazione npm funziona anche mentre si attende l’inserimento. Il repository è pubblico, ha il topic GitHub `dsh-plugin`, contiene `package.json` nella radice ed esporta `apply` dal modulo `lib/index.js`; l’implementazione è in [src/index.ts](src/index.ts).
 
-### Candidato 0.1.2: metadati e discovery
+### 0.1.2: metadati e discovery
 
-Il pacchetto preparato aggiunge le keyword npm `dsh-plugin` / `deepseek-harness` e dichiara direttamente `export function apply(ctx, config)` nel file generato dal build, come gli esempi già listati. La funzione resta identica. È una precauzione per gli scanner statici: il codice dello scanner del catalogo non è pubblico e la causa dell’esclusione non è confermata. La pubblicazione npm attende l’autenticazione del maintainer; la versione pubblicata resta 0.1.1.
+Il pacchetto 0.1.2 aggiunge le keyword npm `dsh-plugin` / `deepseek-harness` e dichiara direttamente `export function apply(ctx, config)` nel file generato dal build, come gli esempi già listati. La funzione resta identica. È una precauzione per gli scanner statici: il codice dello scanner del catalogo non è pubblico e la causa dell’esclusione non è confermata.

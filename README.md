@@ -15,7 +15,7 @@ Tested: **DSH 0.2.0-rc.2**, Node.js 22+, Linux web profile. Other DSH releases, 
 
 ## Install
 
-npm package: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)** (currently published: **0.1.1**).
+npm package: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)** (release **0.1.2**).
 
 ```sh
 dsh plugin --profile web add dsh-voice-conversation
@@ -24,10 +24,10 @@ dsh plugin --profile web add dsh-voice-conversation
 This installs the current npm release. To pin the verified version:
 
 ```sh
-dsh plugin --profile web add dsh-voice-conversation@0.1.1
+dsh plugin --profile web add dsh-voice-conversation@0.1.2
 ```
 
-The same **0.1.1** release is also available as a prebuilt archive below.
+The previous **0.1.1** release is also available as a prebuilt archive below.
 
 ```sh
 # equivalent prebuilt GitHub archive
@@ -106,6 +106,6 @@ Catalog ingestion is tracked in [DSH Plugin Hub issue #548](https://github.com/d
 
 The repository is public, carries the GitHub topic `dsh-plugin`, has a root `package.json`, and exports the host plugin through `lib/index.js` (`apply`, `name`, `inject`, `Config`). [src/index.ts](src/index.ts) contains the source `apply(ctx, config)` implementation.
 
-### 0.1.2 packaging candidate
+### 0.1.2 catalog compatibility
 
-The prepared 0.1.2 package adds the `dsh-plugin` / `deepseek-harness` npm keywords and emits a direct `export function apply(ctx, config)` declaration in the built entry. This matches the entry style of listed plugins while preserving the same function implementation. It is a precaution for static discovery; the Hub scanner code is not public, so the exclusion reason remains unconfirmed. npm publication is pending maintainer authentication; 0.1.1 remains the published release.
+The 0.1.2 package adds the `dsh-plugin` / `deepseek-harness` npm keywords and emits a direct `export function apply(ctx, config)` declaration in the built entry. This matches the entry style of listed plugins while preserving the same function implementation. It is a precaution for static discovery; the Hub scanner code is not public, so the exclusion reason remains unconfirmed.
