@@ -1,10 +1,12 @@
 {
   "name": "dsh-voice-conversation",
   "description": "Hands-free Italian/English voice conversations for DSH, with an inline chat dock and an optional local Whisper/Piper backend.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "keywords": [
     "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
     "deepseek",
     "voice",
     "whisper",
@@ -19,7 +21,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --packages=external --outfile=lib/index.js",
+    "build": "node scripts/build.mjs",
     "test": "node tests/vad.cjs && node tests/dock.cjs && node tests/cycles.cjs",
     "runtime:setup": "python3 scripts/runtime.py setup",
     "runtime:start": "python3 scripts/runtime.py start",

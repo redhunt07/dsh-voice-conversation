@@ -105,3 +105,7 @@ The repository's **Packages** sidebar contains the public [@redhunt07/dsh-voice-
 Catalog ingestion is tracked in [DSH Plugin Hub issue #548](https://github.com/dshplugin/dsh-plugin-hub/issues/548). The submission badge links to that discussion; it does not assert catalog inclusion. The npm install command above works independently of catalog ingestion.
 
 The repository is public, carries the GitHub topic `dsh-plugin`, has a root `package.json`, and exports the host plugin through `lib/index.js` (`apply`, `name`, `inject`, `Config`). [src/index.ts](src/index.ts) contains the source `apply(ctx, config)` implementation.
+
+### 0.1.2 packaging candidate
+
+The prepared 0.1.2 package adds the `dsh-plugin` / `deepseek-harness` npm keywords and emits a direct `export function apply(ctx, config)` declaration in the built entry. This matches the entry style of listed plugins while preserving the same function implementation. It is a precaution for static discovery; the Hub scanner code is not public, so the exclusion reason remains unconfirmed. npm publication is pending maintainer authentication; 0.1.1 remains the published release.

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.2 — 2026-11-01
+
+- Add `dsh-plugin` and `deepseek-harness` package keywords for discovery.
+- Emit a direct `export function apply(ctx, config)` in the built entry, keeping
+  the same implementation and package entry path.
+- Match the declaration style used by listed plugins. This is a compatibility
+  precaution for static scanners; the Hub scanner implementation is not public,
+  so the cause of the missing listing has not been confirmed.
+- No changes to microphone, recognition, synthesis or conversation behavior.
+
 ## 0.1.1 — 2026-10-30
 
 - Recover no-op submissions without depending on another session event.
