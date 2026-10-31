@@ -1,6 +1,6 @@
 # DSH Voice Conversation — guida italiana
 
-[![npm version](https://img.shields.io/npm/v/dsh-voice-conversation.svg)](https://www.npmjs.com/package/dsh-voice-conversation) [![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/redhunt07/dsh-voice-conversation) [![Plugin tests](https://github.com/redhunt07/dsh-voice-conversation/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/redhunt07/dsh-voice-conversation/actions/workflows/test.yml) [![License: MIT](https://img.shields.io/github/license/redhunt07/dsh-voice-conversation.svg)](LICENSE) [![GitHub Packages](https://img.shields.io/badge/GitHub-Packages-181717?logo=github)](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation)
+[![npm version](https://img.shields.io/npm/v/dsh-voice-conversation.svg)](https://www.npmjs.com/package/dsh-voice-conversation) [![DSH Hub: submitted](https://img.shields.io/badge/DSH_Hub-submitted-64748b.svg)](https://github.com/dshplugin/dsh-plugin-hub/issues/548) [![Plugin tests](https://github.com/redhunt07/dsh-voice-conversation/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/redhunt07/dsh-voice-conversation/actions/workflows/test.yml) [![License: MIT](https://img.shields.io/github/license/redhunt07/dsh-voice-conversation.svg)](LICENSE) [![GitHub Packages](https://img.shields.io/badge/GitHub-Packages-181717?logo=github)](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation)
 
 Maintainer / autore del fork: **[RedHunt07](https://github.com/redhunt07)** · License: **MIT**. Original Voice Loop code by ZG2017; see [NOTICE.md](NOTICE.md).
 Conversazione vocale continua italiano/inglese: parli, fai una pausa di 1,7 secondi e il prompt viene inviato. Dopo la risposta vocale torna in ascolto. La barra compatta lascia visibili chat, strumenti e Think reso disponibile da DSH.
@@ -10,6 +10,12 @@ Versione iniziale **0.1.1**, verificata con **DSH 0.2.0-rc.2**, Node.js 22+ e Li
 ## Installazione
 
 Pacchetto npm: **[dsh-voice-conversation](https://www.npmjs.com/package/dsh-voice-conversation)**. La versione attualmente pubblicata su npm è **0.1.1**:
+
+```sh
+dsh plugin --profile web add dsh-voice-conversation
+```
+
+Per fissare la versione verificata:
 
 ```sh
 dsh plugin --profile web add dsh-voice-conversation@0.1.1
@@ -57,3 +63,7 @@ Per usare Kokoro: `python3 scripts/runtime.py setup --device cuda --tts kokoro`,
 ## Pacchetto nella sezione Packages di GitHub
 
 È pubblico e collegato al repository: **[@redhunt07/dsh-voice-conversation 0.1.1](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation)**. [Istruzioni per il registro GitHub](docs/github-packages.md). Usa una sola distribuzione del plugin per profilo: npm oppure GitHub Packages.
+
+## Inserimento nel Plugin Hub
+
+La scansione del catalogo è seguita nella [issue #548](https://github.com/dshplugin/dsh-plugin-hub/issues/548). Il badge indica la presentazione della richiesta; l’installazione npm funziona anche mentre si attende l’inserimento. Il repository è pubblico, ha il topic GitHub `dsh-plugin`, contiene `package.json` nella radice ed esporta `apply` dal modulo `lib/index.js`; l’implementazione è in [src/index.ts](src/index.ts).
