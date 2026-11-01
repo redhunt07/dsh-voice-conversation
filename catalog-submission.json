@@ -2,7 +2,7 @@
   "name": "DSH Voice Conversation",
   "author": "RedHunt07",
   "license": "MIT",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": "https://github.com/redhunt07/dsh-voice-conversation",
   "description": "Hands-free Italian/English voice conversations for DSH, automatic prompt submission after a pause, listening recovery after replies, inline dock preserving chat and tools, and optional local Whisper/Piper speech backend.",
   "compatibility": "DSH 0.2.0-rc.2; Node.js 22+; Linux web profile. Initial release; real-microphone acceptance testing pending.",
