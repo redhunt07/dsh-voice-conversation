@@ -1,6 +1,6 @@
 # DSH Voice Conversation
 
-[![npm version](https://img.shields.io/npm/v/dsh-voice-conversation.svg)](https://www.npmjs.com/package/dsh-voice-conversation) [![DSH Hub: submitted](https://img.shields.io/badge/DSH_Hub-submitted-64748b.svg)](https://github.com/dshplugin/dsh-plugin-hub/issues/548) [![Plugin tests](https://github.com/redhunt07/dsh-voice-conversation/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/redhunt07/dsh-voice-conversation/actions/workflows/test.yml) [![License: MIT](https://img.shields.io/github/license/redhunt07/dsh-voice-conversation.svg)](LICENSE) [![GitHub Packages](https://img.shields.io/badge/GitHub-Packages-181717?logo=github)](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation)
+[![npm version](https://img.shields.io/npm/v/dsh-voice-conversation.svg)](https://www.npmjs.com/package/dsh-voice-conversation) [![Listed on dsh-plugin.org](https://dsh-plugin.org/badges/listed.svg)](https://dsh-plugin.org/plugins/redhunt07/dsh-voice-conversation) [![Plugin tests](https://github.com/redhunt07/dsh-voice-conversation/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/redhunt07/dsh-voice-conversation/actions/workflows/test.yml) [![License: MIT](https://img.shields.io/github/license/redhunt07/dsh-voice-conversation.svg)](LICENSE) [![GitHub Packages](https://img.shields.io/badge/GitHub-Packages-181717?logo=github)](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation)
 
 Maintainer / autore del fork: **[RedHunt07](https://github.com/redhunt07)** · License: **MIT**. Original Voice Loop code by ZG2017; see [NOTICE.md](NOTICE.md).
 Hands-free Italian/English conversations for DSH. Speak, pause for 1.7 seconds, and your prompt is submitted. After the final spoken reply, listening resumes using the same microphone stream. A compact composer dock keeps the native chat, tools and DSH-provided Think output visible. This displays reasoning exposed by DSH, not private model reasoning.
@@ -100,9 +100,9 @@ The patch also fixes delayed chat completion, same-turn approval continuations, 
 
 The repository's **Packages** sidebar contains the public [@redhunt07/dsh-voice-conversation](https://github.com/users/redhunt07/packages/npm/package/dsh-voice-conversation) package, version **0.1.1**. The scoped GitHub distribution adjusts the package, browser module and bundle identities together. [Registry setup and installation](docs/github-packages.md). Choose either the npm distribution or the GitHub Packages distribution in a profile; do not enable both at once.
 
-## Plugin Hub submission
+## Plugin Hub
 
-Catalog ingestion is tracked in [DSH Plugin Hub issue #548](https://github.com/dshplugin/dsh-plugin-hub/issues/548). The submission badge links to that discussion; it does not assert catalog inclusion. The npm install command above works independently of catalog ingestion.
+The plugin is [listed on dsh-plugin.org](https://dsh-plugin.org/plugins/redhunt07/dsh-voice-conversation). The official badge above links directly to its catalog page. The original submission is tracked in [DSH Plugin Hub issue #548](https://github.com/dshplugin/dsh-plugin-hub/issues/548).
 
 The repository is public, carries the GitHub topic `dsh-plugin`, has a root `package.json`, and exports the host plugin through `lib/index.js` (`apply`, `name`, `inject`, `Config`). [src/index.ts](src/index.ts) contains the source `apply(ctx, config)` implementation.
 
